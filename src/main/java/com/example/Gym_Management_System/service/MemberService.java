@@ -70,7 +70,11 @@ public class MemberService {
 
         return PageResponse.from(page.map(MemberResponse::from));
     }
-
+    public MemberResponse getByUserId(Long userId) {
+        Member member = memberRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Member profile for user", userId));
+        return MemberResponse.from(member);
+    }
     @Transactional
     public MemberResponse update(Long id, UpdateMemberRequest request) {
         Member member = findOrThrow(id);

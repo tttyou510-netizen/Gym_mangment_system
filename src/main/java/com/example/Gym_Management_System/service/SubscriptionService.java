@@ -134,7 +134,11 @@ public class SubscriptionService {
         s.setStatus(SubscriptionStatus.ACTIVE);
         return SubscriptionResponse.from(s);
     }
-
+    public List<SubscriptionResponse> getByUserId(Long userId) {
+        Member member = memberRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Member profile for user", userId));
+        return getByMember(member.getId());
+    }
     private Subscription findOrThrow(Long id) {
         return subscriptionRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription", id));

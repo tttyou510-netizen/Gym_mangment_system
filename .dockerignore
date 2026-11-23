@@ -1,0 +1,27 @@
+# ملفات البناء المحلية (عشان دوكر يبني من الصفر بنظافة في Multi-Stage)
+target/
+build/
+
+# ملفات Git والـ IDE (بتزود حجم النقل على الفاضي)
+.git/
+.gitignore
+.gitattributes
+.idea/
+*.iml
+.vscode/
+
+# ملفات البيئة والأسرار (مهم جداً للأمان)
+.env
+.env.*
+
+# ملفات دوكر نفسها (مش محتاجينها جوه الكونتينر)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# ملفات التوثيق والنظام
+README.md
+HELP.md
+*.log
+.DS_Store
+Thumbs.db

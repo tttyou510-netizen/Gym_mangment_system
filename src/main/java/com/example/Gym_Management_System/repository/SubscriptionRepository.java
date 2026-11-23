@@ -2,10 +2,9 @@ package com.example.Gym_Management_System.repository;
 
 import com.example.Gym_Management_System.emuns.SubscriptionStatus;
 import com.example.Gym_Management_System.model.Subscription;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -68,4 +67,12 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
         where s.id = :id and s.reminderSentAt is null
         """)
     int markReminderSent(@Param("id") Long id, @Param("now") LocalDateTime now);
+    // قفل الصف أثناء تسجيل الدفع: دفعتين في نفس اللحظة مش هيعدّوا الفحص مع بعض
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from Subscription s where s.id = :id")
+    Optional<Subscription> findByIdForUpdate(@Param("id") Long id);
+    // الاشتراك السارِي النهارده: ACTIVE وبدأ ولسه ما انتهاش
+    @EntityGraph(attributePaths = "plan")
+    Optional<Subscription> findFirstByMemberIdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+            Long memberId, SubscriptionStatus status, LocalDate startDate, LocalDate endDate);
 }
