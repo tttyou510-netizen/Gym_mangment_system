@@ -35,8 +35,8 @@ public class StaffService {
 
     @Transactional
     public StaffResponse create(CreateStaffRequest request) {
-        if (request.role() == Role.MEMBER) {
-            throw new BadRequestException("Members must be registered through the members endpoint");
+        if (request.role() == Role.MEMBER || request.role() == Role.TRAINER) {
+            throw new BadRequestException("Members and trainers must be created through their own endpoints");
         }
 
         String email = request.email().trim().toLowerCase();
@@ -96,5 +96,6 @@ public class StaffService {
         return userRepository.findById(id)
                 .filter(u -> u.getRole() != Role.MEMBER)
                 .orElseThrow(() -> new ResourceNotFoundException("Staff", id));
+
     }
 }

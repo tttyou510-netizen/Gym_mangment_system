@@ -1,5 +1,6 @@
 package com.example.Gym_Management_System.repository;
 
+import com.example.Gym_Management_System.dto.PlanPopularityResponse;
 import com.example.Gym_Management_System.emuns.SubscriptionStatus;
 import com.example.Gym_Management_System.model.Subscription;
 import org.springframework.data.jpa.repository.*;
@@ -75,4 +76,33 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     @EntityGraph(attributePaths = "plan")
     Optional<Subscription> findFirstByMemberIdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
             Long memberId, SubscriptionStatus status, LocalDate startDate, LocalDate endDate);
+
+    // اشتراكات شغّالة النهارده
+    long countByStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(SubscriptionStatus status,
+                                                                          LocalDate startDate,
+                                                                          LocalDate endDate);
+
+    long countByStatusAndEndDateBetween(SubscriptionStatus status, LocalDate from, LocalDate to);
+
+    @Query("""
+        select s from Subscription s
+        join fetch s.member m
+        join fetch m.user
+        join fetch s.plan
+        where s.status = :status and s.endDate between :from and :to
+        order by s.endDate asc
+        """)
+    List<Subscription> findExpiringWithDetails(@Param("status") SubscriptionStatus status,
+                                               @Param("from") LocalDate from,
+                                               @Param("to") LocalDate to);
+
+    // GROUP BY + COUNT مباشرة في الداتابيز، والنتيجة بتتحوّل لـ record
+    @Query("""
+        select new com.example.Gym_Management_System.dto.PlanPopularityResponse(p.name, count(s))
+        from Subscription s
+        join s.plan p
+        group by p.id, p.name
+        order by count(s) desc
+        """)
+    List<PlanPopularityResponse> findPlanPopularity();
 }

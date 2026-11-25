@@ -25,4 +25,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     @EntityGraph(attributePaths = {"member.user", "subscription.plan"})
     Page<Attendance> findByMemberId(Long memberId, Pageable pageable);
+    long countByCheckInAtGreaterThanEqualAndCheckInAtLessThan(LocalDateTime from, LocalDateTime to);
+
+    long countByCheckOutAtIsNullAndCheckInAtGreaterThanEqual(LocalDateTime from);
 }

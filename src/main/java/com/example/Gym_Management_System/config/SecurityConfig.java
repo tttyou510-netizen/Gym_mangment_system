@@ -52,17 +52,41 @@ public class SecurityConfig {
                         // الأعضاء والاشتراكات: أدمن واستقبال
                         .requestMatchers("/api/v1/members/**").hasAnyRole("ADMIN", "RECEPTIONIST")
                         .requestMatchers("/api/v1/subscriptions/**").hasAnyRole("ADMIN", "RECEPTIONIST")
-                        // الاسترداد للأدمن بس (لازم يجي قبل القاعدة العامة)
+
+                        // الدفعات: الاسترداد للأدمن بس (لازم قبل القاعدة العامة)
                         .requestMatchers(HttpMethod.POST, "/api/v1/payments/*/refund").hasRole("ADMIN")
-                        // باقي الدفعات: أدمن واستقبال
                         .requestMatchers("/api/v1/payments/**").hasAnyRole("ADMIN", "RECEPTIONIST")
-                        // بيانات العضو الخاصة بيه: العضو بس
+
+                        // التقارير المالية: أدمن بس
+                        .requestMatchers("/api/v1/reports/**").hasRole("ADMIN")
+
+                        // الداشبورد: أدمن واستقبال (من غير أرقام مالية)
+                        .requestMatchers("/api/v1/dashboard/**").hasAnyRole("ADMIN", "RECEPTIONIST")
+
+                        // الحضور: أدمن واستقبال ومدرب
                         .requestMatchers("/api/v1/attendance/**").hasAnyRole("ADMIN", "RECEPTIONIST", "TRAINER")
+
+                        // المدربين: القراءة للموظفين (فيها إيميل وتليفون)، والتعديل للأدمن
+                        .requestMatchers(HttpMethod.GET, "/api/v1/trainers/**")
+                        .hasAnyRole("ADMIN", "RECEPTIONIST", "TRAINER")
+                        .requestMatchers("/api/v1/trainers/**").hasRole("ADMIN")
+
+                        // الحصص: الترتيب مهم (الأخص الأول)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/classes/mine").hasRole("TRAINER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/classes/*/bookings")
+                        .hasAnyRole("ADMIN", "RECEPTIONIST", "TRAINER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/classes/**").authenticated()
+                        .requestMatchers("/api/v1/classes/**").hasRole("ADMIN")
+
+                        // الحجز بالنيابة عن العضو: أدمن واستقبال
+                        .requestMatchers("/api/v1/bookings/**").hasAnyRole("ADMIN", "RECEPTIONIST")
+
+                        // بيانات العضو الخاصة بيه: العضو بس
                         .requestMatchers("/api/v1/me/**").hasRole("MEMBER")
 
                         // أي حاجة تانية لازم تسجيل دخول (/auth/me و/auth/change-password)
                         .anyRequest().authenticated())
-                    .exceptionHandling(ex -> ex
+                .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(errorHandler)
                         .accessDeniedHandler(errorHandler))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService, userDetailsService),
